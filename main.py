@@ -1,12 +1,19 @@
 import tkinter as tk
 from tkinter import ttk
 import requests
+import json as json
+import datetime as datetime
 
-ip = "http://192.168.1.222"
+
+
+ip = "http://192.168.129.154"
+
 
 def getValue():
-    r = requests.get(ip+"/get-values")
-    return round(r.text, 4)
+  a = requests.get(ip + "/getValues")
+  b = json.loads(a.text)
+  r = b["value"]
+  return round(float(r), 4)
 
 class App:
     def __init__(self, root):
@@ -42,8 +49,9 @@ class App:
         self.max_label.config(text=f"Max Value: {self.max_value}")
 
         if self.save_to_file.get():
-            with open("values.txt", "a") as f:
-                f.write(str(value) + "\n")
+          with open("nurEi.txt", "a") as f:
+            x = str(datetime.datetime.now()) + " " + str(value)
+            f.write(x + "\n")
 
         self.root.after(1000, self.update_value)
 

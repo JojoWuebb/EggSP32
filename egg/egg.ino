@@ -1,6 +1,7 @@
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
+#include <WebServer.h>
 #include <WiFi.h>
 #include <ArduinoJson.h>
 
@@ -14,7 +15,7 @@ const char* ssid = "Enter_SSID_here";
 const char* password = "Enter_Password_here";
 
 // Set web server port number to 80
-WiFiServer server(80);
+WebServer server(80);
 
 
 void handleGetValues() {
@@ -29,12 +30,14 @@ void handleGetValues() {
 
   // Set the Content-Type to "application/json" and send the JSON string
   server.send(200, "application/json", jsonString);
+
+  maxValue = 0;
 }
 
 void setup(void) {
   Serial.begin(115200);
-  while (!Serial)
-    delay(10);  // will pause Zero, Leonardo, etc until serial console opens
+  //while (!Serial)
+  //  delay(10);  // will pause Zero, Leonardo, etc until serial console opens
 
   Serial.println("Adafruit MPU6050 test!");
 
@@ -111,7 +114,7 @@ void setup(void) {
   Serial.print("Connecting to ");
   Serial.println(ssid);
 
-  WiFi.begin(ssid, password);
+  Serial.println(WiFi.begin(ssid, password));
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -124,6 +127,7 @@ void setup(void) {
   Serial.println(WiFi.localIP());
 
   server.on("/getValues", HTTP_GET, handleGetValues);
+
   server.begin();
 
   Serial.println("");
@@ -134,7 +138,7 @@ void loop() {
   /* Get new sensor events with the readings */
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
-  tempSum = a.acceleration.x + a.acceleration.y + a.acceleration.z;
+  tempSum = abs(a.acceleration.x) + abs(a.acceleration.y) + abs(a.acceleration.z);
   if (tempSum > maxValue) maxValue = tempSum;
   server.handleClient();
 }
